@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NameGenerator {
-    // class variable
-    final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
+    private final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
 
-    final java.util.Random rand = new java.util.Random();
+    private final java.util.Random rand = new java.util.Random();
 
-    // consider using a Map<String,Boolean> to say whether the identifier is being used or not
-    final List<String> identifiers = new ArrayList<>();
+    private final List<String> identifiers = new ArrayList<>();
 
     private String randomIdentifier() {
         StringBuilder builder = new StringBuilder();
