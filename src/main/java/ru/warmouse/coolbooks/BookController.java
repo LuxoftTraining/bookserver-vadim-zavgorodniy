@@ -21,6 +21,11 @@ public class BookController {
         service.generateBooks(count);
     }
 
+    @PostMapping("add/{name}")
+    public void addBook(@PathVariable("name") String name) {
+        service.addBook(name);
+    }
+
     @GetMapping
     public List<Book> generateBooks(@RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {

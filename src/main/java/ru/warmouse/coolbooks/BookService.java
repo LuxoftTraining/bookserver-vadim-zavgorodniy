@@ -62,4 +62,8 @@ public class BookService {
     private Predicate<Book> createPredicate(Set<String> keys) {
         return book -> book.keyWords().containsAll(keys);
     }
+
+    public void addBook(String name) {
+        bookRepository.save(new Book(name));
+    }
 }
