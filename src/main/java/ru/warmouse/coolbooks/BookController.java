@@ -26,4 +26,10 @@ public class BookController {
             @RequestParam(value = "size", defaultValue = "10") int size) {
         return service.getPage(page, size);
     }
+
+    @GetMapping("keywords/{keys}")
+    public List<Book> generateBooks(@PathVariable("keys") String keys) {
+        String[] split = keys.split("\\+");
+        return service.findByKeyWords(List.of(split));
+    }
 }
