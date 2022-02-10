@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.warmouse.coolbooks.persistence.Book;
 import ru.warmouse.coolbooks.persistence.BookRepository;
 
 @Service
+@Transactional
 public class BookService {
     public static final int PAGE_SIZE = 100;
     @Autowired
