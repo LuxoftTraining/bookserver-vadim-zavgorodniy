@@ -1,11 +1,10 @@
 package ru.warmouse.coolbooks;
 
+import java.sql.SQLException;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import ru.warmouse.coolbooks.persistence.Book;
-import ru.warmouse.coolbooks.persistence.BookRepository;
 
 @SpringBootApplication
 public class CoolbooksApplication {
@@ -15,20 +14,20 @@ public class CoolbooksApplication {
 	}
 
 	@Bean
-	public CommandLineRunner init(BookRepository bookRepository)
+	public CommandLineRunner init(BookService bookService)
 	{
 		return env ->
 		{
-			generateTestData(bookRepository);
-			System.out.println("TEST DATA GENERATED");
+			// generateTestData(bookService);
+			// System.out.println("TEST DATA GENERATED");
 		};
 	}
 
-	private void generateTestData(BookRepository bookRepository) {
-		bookRepository.save(new Book("warmouse cool book 123"));
-		bookRepository.save(new Book("cool book foo warmouse"));
-		bookRepository.save(new Book("bar 13 book warmouse foo cool"));
-		bookRepository.save(new Book("bazz cool qwe book rty warmouse  123qe"));
+	private void generateTestData(BookService bookService) throws SQLException {
+		bookService.addBook("warmouse cool book 123");
+		bookService.addBook("cool book foo warmouse");
+		bookService.addBook("bar 13 book warmouse foo cool");
+		bookService.addBook("bazz cool qwe book rty warmouse  123qe");
 	}
 
 }

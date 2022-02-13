@@ -49,6 +49,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.loadtest4j</groupId>
 			<artifactId>loadtest4j</artifactId>
 			<version>0.19.0</version>

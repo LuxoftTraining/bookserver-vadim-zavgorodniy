@@ -1,71 +1,85 @@
 package ru.warmouse.coolbooks;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.warmouse.coolbooks.persistence.Book;
+import ru.warmouse.coolbooks.persistence.BookByKeywordRepository;
+import ru.warmouse.coolbooks.persistence.BookKeyword;
 import ru.warmouse.coolbooks.persistence.BookRepository;
 
 @Service
 @Transactional
 public class BookService {
-    public static final int PAGE_SIZE = 100;
     @Autowired
     private BookRepository bookRepository;
 
-    public void generateBooks(int count) {
-        final NameGenerator generator = new NameGenerator();
-        generator.prepare();
+    @Autowired
+    private BookByKeywordRepository bookByKeywordRepository;
 
-        List<Book> books = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            Book book = new Book();
-            book.setName(generator.generate());
-            books.add(book);
-        }
-        bookRepository.saveAll(books);
+    private final NameGenerator generator = new NameGenerator();
+
+    public void generateTestData() throws SQLException {
+        addBook("warmouse cool book 123");
+        addBook("cool book foo warmouse");
+        addBook("bar 13 book warmouse foo cool");
+        addBook("bazz cool qwe book rty warmouse  123qe");
     }
 
+    public void generateBooks(int count) throws SQLException {
+        for (int i = 0; i < count; i++) {
+            addBook(generator.generate());
+        }
+    }
+
+    public void addBook(String name) throws SQLException {
+        Book book = new Book();
+        book.setName(name);
+        bookRepository.save(book);
+        createKeywords(book);
+    }
+
+    private void createKeywords(Book book) throws SQLException {
+        List<BookKeyword> tags = new ArrayList<>();
+        for (String word : getKeyWords(book.getName())) {
+            tags.add(new BookKeyword(book.getId(), word));
+        }
+        bookByKeywordRepository.saveAll(tags);
+    }
+
+    private Set<String> getKeyWords(String name) {
+        return Stream.of(name.toLowerCase().split(" "))
+                .map(String::trim)
+                .filter(w -> !w.isBlank())
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    @Transactional(readOnly = true)
     public List<Book> getPage(int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         return bookRepository.findAll(pageRequest).toList();
     }
 
-    public List<Book> findByKeyWords(List<String> words) {
-        final List<Book> res = new ArrayList<>();
-        final Set<String> keys = words.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toUnmodifiableSet());
-        Predicate<Book> predicate = createPredicate(keys);
-
-        int pageNum = 0;
-        Page<Book> page = bookRepository.findAll(PageRequest.of(pageNum++, PAGE_SIZE));
-        while (!page.isEmpty()) {
-            res.addAll(matchInPage(page, predicate));
-            page = bookRepository.findAll(PageRequest.of(pageNum++, PAGE_SIZE));
+    @Transactional(readOnly = true)
+    public List<Book> findByKeyWords(List<String> words) throws SQLException {
+        List<String> lowWords = new ArrayList<>();
+        for (String word : words) {
+            if (!word.isBlank()) {
+                lowWords.add(word.toLowerCase());
+            }
         }
-
-        return res;
+        return bookByKeywordRepository.findByWords(lowWords);
     }
 
-    private List<Book> matchInPage(Page<Book> page, Predicate<Book> predicate) {
-        return page.stream()
-                .filter(predicate)
-                .collect(Collectors.toUnmodifiableList());
-    }
-
-    private Predicate<Book> createPredicate(Set<String> keys) {
-        return book -> book.keyWords().containsAll(keys);
-    }
-
-    public void addBook(String name) {
-        bookRepository.save(new Book(name));
+    public void clear() throws SQLException {
+        bookByKeywordRepository.deleteAll();
+        bookRepository.deleteAll();
     }
 }
